@@ -191,7 +191,6 @@ var World = (function(){
             }
         },
         init: function(play){
-            this.socket = io();
             this.showWorld();
             this.playerNum = play || 1;
             for (var i in this.board){
@@ -321,7 +320,6 @@ var World = (function(){
             audio.play();
         },
         actionAtPoint: function(place, color){
-            this.socket.emit('chat message', place, color);
             var path = [];
             this.heap = this.heap['nextLevel'][String(place[0])+String(place[1])] || {};
             if (typeof this.heap['value'] != 'undefined' && this.heap['color'] == color){
@@ -859,6 +857,53 @@ var World = (function(){
     return w;
 })();
 
+var BattleOnline = (function() {
+    var _uuid = (new Date()).getTime(),
+        _socket = io('', {query: 'uuid='+_uuid}),
+        _currentColor = 'black',
+        _matchId = '';
+
+    console.log(_uuid);
+
+    var _actionAtPoint = World.actionAtPoint;
+    World.actionAtPoint = function(place, color) {
+        _actionAtPoint.apply(World, [place, color]);
+        if(_matchId && _currentColor == color) _socket.emit('chess', place, color, _matchId);
+    }
+
+    _socket.on('chess', function(place, color) {
+        console.log('on msg');
+        if(_currentColor !== color) World.actionAtPoint(place, color);
+    });
+
+    var _matching = function() {
+        if(_matchId) {
+            _matchId = '';
+            _currentColor = 'black';
+        }
+        $.ajax({
+            url: '/search_match',
+            type: 'GET',
+            data: {uuid: _uuid},
+            dataType: 'json',
+            success: function(res) {
+                console.log(res);
+                _matchId = res.matchId;
+                _currentColor = res[_uuid];
+                World.init(2);
+            },
+            error: function(err) {
+                console.log(err);
+            }
+        });
+    }
+
+    var b = {
+        matching: _matching
+    }
+    return b;
+})();
+
 function getMessage(key, alter) {
     var ret = alter || '';
     if (window.chrome && window.chrome.i18n && window.chrome.i18n.getMessage) {
@@ -914,28 +959,40 @@ function registerEventHandlers() {
     .on("mouseout","#open2",function() {
       $('#open_text_bg_3').addClass('display_none');
     })
+    /* #open_online */
+    .on("click","#open_online",function() {
+      World.playSound('snd_navclick');
+      BattleOnline.matching();
+    })
+    .on("mouseover","#open_online",function() {
+      $('#open_text_bg_2').removeClass('display_none');
+      World.playSound('snd_navmove');
+    })
+    .on("mouseout","#open_online",function() {
+      $('#open_text_bg_2').addClass('display_none');
+    })
     /* #open_help */
     .on("click","#open_help",function() {
       World.showHelp();
     })
     .on("mouseover","#open_help",function() {
-      $('#open_text_bg_2').removeClass('display_none');
-      World.playSound('snd_navmove');
-    })
-    .on("mouseout","#open_help",function() {
-      $('#open_text_bg_2').addClass('display_none');
-    })
-    /* #open_exit */
-    .on("click","#open_exit",function() {
-      window.close();
-    })
-    .on("mouseover","#open_exit",function() {
       $('#open_text_bg_1').removeClass('display_none');
       World.playSound('snd_navmove');
     })
-    .on("mouseout","#open_exit",function() {
+    .on("mouseout","#open_help",function() {
       $('#open_text_bg_1').addClass('display_none');
     })
+    /* #open_exit */
+    // .on("click","#open_exit",function() {
+    //   window.close();
+    // })
+    // .on("mouseover","#open_exit",function() {
+    //   $('#open_text_bg_1').removeClass('display_none');
+    //   World.playSound('snd_navmove');
+    // })
+    // .on("mouseout","#open_exit",function() {
+    //   $('#open_text_bg_1').addClass('display_none');
+    // })
     /* #help_exit */
     .on("click","#help_exit",function() {
       World.exitHelp();
@@ -967,6 +1024,7 @@ window.onload = function(){
     $('title').html(getMessage('name', 'Annex'));
     $('#open1').html(getMessage('1PlayerGame', '1 Player Game'));
     $('#open2').html(getMessage('2PlayerGame', '2 Player Game'));
+    $('#open_online').html(getMessage('battle_online', 'Battle Online'));
     $('#open_help').html(getMessage('howtoPlay', 'How to Play'));
     $('#open_exit').html(getMessage('exit', 'Exit'));
 
