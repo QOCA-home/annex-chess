@@ -17,11 +17,15 @@ app.get('/', function(req, res){
 });
 
 app.get('/search_match', function(req, res){
-  waitfor.push({uuid: req.query.uuid, res: res});
+  var uuid = req.query.uuid;
+  var foundWaitfor = waitfor.find(function(elm) {
+  	return elm.uuid == uuid;
+  });
+  if(!foundWaitfor) waitfor.push({uuid: uuid, res: res});
 });
 
 setInterval(function() {
-  if(waitfor.length == 2) {
+  if(waitfor.length >= 2) {
   	var u1 = waitfor[0].uuid, u2 = waitfor[1].uuid;
   	var r1 = waitfor[0].res, r2 = waitfor[1].res;
   	var s1 = sockets[u1], s2 = sockets[u2];
@@ -39,7 +43,8 @@ setInterval(function() {
   	s2.join(matchId);
 
   	matches.push(match);
-  	waitfor = [];
+  	waitfor.splice(0, 1);
+  	waitfor.splice(0, 1);
   }
 }, 1000);
 
