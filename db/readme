@@ -1,0 +1,11 @@
+Collection: User
+Document:
+{
+	uuid: '123',
+	name: 'Alice',
+	record: {
+		win: 1,
+		lose: 1,
+		draw: 1
+	}
+}
