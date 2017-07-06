@@ -100,6 +100,11 @@ var World = (function(){
                        '<a class="result_new_p2"></a>'+
                        '<a class="result_exit"></a>'+
                        '<div class="result_quit"></div>'+
+                     '</div>'+
+                     '<div id="result_room" class="result result_wood display_none">'+
+                       '<div class="result_room_text" align="center"></div>'+
+                       '<img class="result_exit_rollover display_none" src="images/winner_005_exitrollover.png" />'+
+                       '<a class="result_exit"></a>'+
                      '</div>')
                     .on('click','a.configure',function() {
                          World.configure();
@@ -880,6 +885,22 @@ var BattleOnline = (function() {
         }
     }
 
+    var _drawMessage = World.drawMessage;
+    World.drawMessage = function(reason) {
+        if(_matchId) {
+            if(reason) {
+                if(reason == 'Opponent leaves!') {
+                    $('.result_room_text').html(reason);
+                    $('#result_room').removeClass('display_none');
+                }
+            } else {
+                _drawMessage.apply(World);
+            }
+        } else {
+            _drawMessage.apply(World);
+        }
+    }
+
     _socket.on('chess', function(place, color) {
         console.log('on msg');
         if(_currentColor !== color) World.actionAtPoint(place, color);
@@ -887,6 +908,7 @@ var BattleOnline = (function() {
 
     _socket.on('end chess', function(reason) {
         console.log(reason);
+        World.drawMessage(reason);
         _matchId = '';
         _currentColor = 'black';
     });
