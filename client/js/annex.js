@@ -876,6 +876,10 @@ var BattleOnline = (function() {
         if(_currentColor !== color) World.actionAtPoint(place, color);
     });
 
+    _socket.on('end chess', function(reason) {
+        console.log(reason);
+    });
+
     var _matching = function() {
         if(_matchId) {
             _matchId = '';
