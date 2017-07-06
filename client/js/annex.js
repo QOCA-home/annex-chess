@@ -871,6 +871,15 @@ var BattleOnline = (function() {
         if(_matchId && _currentColor == color) _socket.emit('chess', place, color, _matchId);
     }
 
+    var _click = World.click;
+    World.click = function(i, j) {
+        if(_matchId) {
+            if(_currentColor == World.currentColor) _click.apply(World, [i, j]);
+        } else {
+            _click.apply(World, [i, j]);
+        }
+    }
+
     _socket.on('chess', function(place, color) {
         console.log('on msg');
         if(_currentColor !== color) World.actionAtPoint(place, color);
@@ -878,6 +887,8 @@ var BattleOnline = (function() {
 
     _socket.on('end chess', function(reason) {
         console.log(reason);
+        _matchId = '';
+        _currentColor = 'black';
     });
 
     var _matching = function() {
