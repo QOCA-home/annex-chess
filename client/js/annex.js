@@ -914,6 +914,7 @@ var BattleOnline = (function() {
     });
 
     var _matching = function() {
+        $('#searching_matches').removeClass('display_none');
         if(_matchId) {
             _matchId = '';
             _currentColor = 'black';
@@ -924,6 +925,7 @@ var BattleOnline = (function() {
             data: {uuid: _uuid},
             dataType: 'json',
             success: function(res) {
+                $('#searching_matches').addClass('display_none');
                 console.log(res);
                 _matchId = res.matchId;
                 _currentColor = res[_uuid];
