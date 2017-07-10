@@ -6,7 +6,7 @@ A chess game forked from `https://github.com/01org/webapps-annex` supports 1 and
 
 ```shell
 git clone https://github.com/QOCA-home/annex-chess.git
-cd your-project/
+cd annex-chess/
 npm install
 npm run start
 ```
