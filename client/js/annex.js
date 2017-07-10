@@ -930,6 +930,8 @@ var BattleOnline = (function() {
                 _matchId = res.matchId;
                 _currentColor = res[_uuid];
                 World.init(2);
+                $('.configure_panel_startover').addClass('display_none');
+                $('.configure_panel_newgame').addClass('display_none');
             },
             error: function(err) {
                 console.log(err);
